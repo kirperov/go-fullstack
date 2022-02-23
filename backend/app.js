@@ -47,4 +47,11 @@ app.get('/api/stuff', (req, res, next) => {
       .catch(error => res.status(404).json({ error }));
   });
 
+  app.put('/api/stuff/:id', (req, res, next) => {
+    // req.params.id c'est l'id envoyé en parametre de la requete,  ...req.body, _id: req.params.id le nouvel objet avec un id en question
+    Thing.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
+      .then(() => res.status(200).json({ message: 'Objet modifié !'}))
+      .catch(error => res.status(400).json({ error }));
+  });
+
 module.exports = app;
