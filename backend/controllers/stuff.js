@@ -1,4 +1,6 @@
 const Thing = require("../models/Thing");
+// Le package fs expose des méthodes pour interagir avec le système de fichiers du serveur
+const fs = require('fs');
 
 exports.createThing = (req, res, next) => {
   const thingObject = JSON.parse(req.body.thing);
@@ -25,34 +27,17 @@ exports.modifyThing = (req, res, next) => {
 };
 
 exports.deleteThing = (req, res, next) => {
-    Thing.findOne({ _id: req.params.id }).then(
-      (thing) => {
-        if (!thing) {
-          res.status(404).json({
-            error: new Error('No such Thing!')
-          });
-        }
-        if (thing.userId !== req.auth.userId) {
-          res.status(400).json({
-            error: new Error('Unauthorized request!')
-          });
-        }
-        Thing.deleteOne({ _id: req.params.id }).then(
-          () => {
-            res.status(200).json({
-              message: 'Deleted!'
-            });
-          }
-        ).catch(
-          (error) => {
-            res.status(400).json({
-              error: error
-            });
-          }
-        );
-      }
-    )
-  };
+  Thing.findOne({ _id: req.params.id })
+    .then(thing => {
+      const filename = thing.imageUrl.split('/images/')[1];
+      fs.unlink(`images/${filename}`, () => {
+        Thing.deleteOne({ _id: req.params.id })
+          .then(() => res.status(200).json({ message: 'Objet supprimé !'}))
+          .catch(error => res.status(400).json({ error }));
+      });
+    })
+    .catch(error => res.status(500).json({ error }));
+};
 
 exports.getOneThing =  (req, res, next) => {
     Thing.findOne({ _id: req.params.id })
