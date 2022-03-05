@@ -1,17 +1,16 @@
 const Thing = require("../models/Thing");
 
 exports.createThing = (req, res, next) => {
-    // Supprimer l'id car génété par mongoDB
-    delete req.body._id;
-    const thing = new Thing({
-        // title: req.body.title,
-        // Pareil que
-        ...req.body
-    });
-    thing.save()
-    .then(() => res.status(201).json({message: "Objet enregistré !"}))
-    .catch(error => res.status(400).json({error}));
-}
+  const thingObject = JSON.parse(req.body.thing);
+  delete thingObject._id;
+  const thing = new Thing({
+    ...thingObject,
+    imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+  });
+  thing.save()
+    .then(() => res.status(201).json({ message: 'Objet enregistré !'}))
+    .catch(error => res.status(400).json({ error }));
+};
 
 exports.modifyThing =  (req, res, next) => {
 // req.params.id c'est l'id envoyé en parametre de la requete,  ...req.body, _id: req.params.id le nouvel objet avec un id en question
